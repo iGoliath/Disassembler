@@ -65,14 +65,13 @@ int main() {
 
     free(string);
 
-    fseek(file, 0, SEEK_SET);
-    fseek(file, 0x117C, SEEK_SET);
-    
-    char *byteArray = malloc(0x0E * sizeof(char));
-    fread(byteArray, sizeof(char), 0x0E, file);
-    fwrite(byteArray, sizeof(char), 0x0E, stdout);
+    fseek(file, 4476, SEEK_SET); 
+
+    char *byteArray = malloc(15 * sizeof(char));
+    fread(byteArray, sizeof(char), 15, file);
+    fwrite(byteArray, sizeof(char), 15, stdout);
     printf("\n\n");
-    printf("%X\n\n", byteArray);
+    printf("%016lX\n\n", byteArray);
     free(byteArray);
     fclose(file);
 
@@ -167,11 +166,11 @@ void printEhdrInfo(Elf64_Ehdr header, char* EI_OSABIValues[]) {
         printf("e_version: %04X [Invalid]\n", header.e_version);
     }
 
-    printf("e_entry: %08X\n", header.e_entry);
+    printf("e_entry: %08lX\n", header.e_entry);
 
-    printf("e_phoff: %08X\n", header.e_phoff);
+    printf("e_phoff: %08lX\n", header.e_phoff);
 
-    printf("e_shoff: %08X\n", header.e_shoff);
+    printf("e_shoff: %08lX\n", header.e_shoff);
 
     printf("e_flags: %04X\n", header.e_flags);
 
@@ -207,17 +206,17 @@ void printPhdrInfo(Elf64_Phdr phdr, char *p_flagValues[]) {
         printf("p_flags: %08X [%s]\n", phdr.p_flags, p_flagValues[phdr.p_flags]);
     }
 
-    printf("p_offset: %016X\n", phdr.p_offset);
+    printf("p_offset: %016lX\n", phdr.p_offset);
     
-    printf("p_vaddr: %016X\n", phdr.p_vaddr);
+    printf("p_vaddr: %016lX\n", phdr.p_vaddr);
 
-    printf("p_paddr: %016X\n", phdr.p_paddr);
+    printf("p_paddr: %016lX\n", phdr.p_paddr);
 
-    printf("p_filesz: %016X\n", phdr.p_filesz);
+    printf("p_filesz: %016lX\n", phdr.p_filesz);
 
-    printf("p_memsz: %016X\n", phdr.p_memsz);
+    printf("p_memsz: %016lX\n", phdr.p_memsz);
 
-    printf("p_align: %016X\n\n\n", phdr.p_align);
+    printf("p_align: %016lX\n\n\n", phdr.p_align);
 
     return;
 }
@@ -227,21 +226,21 @@ void printShdrInfo(Elf64_Shdr shdr) {
 
     printf("Section Header Type: %d\n", shdr.sh_type);
 
-    printf("Flags: %016X\n", shdr.sh_flags);
+    printf("Flags: %016lX\n", shdr.sh_flags);
 
-    printf("Section Header Address: %016X\n", shdr.sh_addr);
+    printf("Section Header Address: %016lX\n", shdr.sh_addr);
 
-    printf("Section Offset: %016X\n", shdr.sh_offset);
+    printf("Section Offset: %016lX\n", shdr.sh_offset);
 
-    printf("Section Size: %016X\n", shdr.sh_size);
+    printf("Section Size: %016lX\n", shdr.sh_size);
 
     printf("Section header table index link: %08X\n", shdr.sh_link);
 
     printf("Section info: %08X\n", shdr.sh_info);
 
-    printf("Section alignment: %016X\n", shdr.sh_addralign);
+    printf("Section alignment: %016lX\n", shdr.sh_addralign);
 
-    printf("Section entry size (in bytes): %016X\n\n", shdr.sh_entsize);
+    printf("Section entry size (in bytes): %016lX\n\n", shdr.sh_entsize);
 
 }
 
