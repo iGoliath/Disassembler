@@ -4,7 +4,7 @@
 #include <string.h>
 
 void printEhdrInfo(Elf64_Ehdr, char*[]);
-void printPhdrInfo(Elf64_Phdr, char*[]);
+void printPhdrInfo(Elf64_Phdr, char*[], char*[]);
 void printShdrInfo(Elf64_Shdr);
 
 int main() {
@@ -21,21 +21,21 @@ int main() {
 
     char *p_flagValues[] = {"Error", "Execute", "Write", "Write/Execute", "Read", "Read/Execute", "Read/Write", "Read/Write/Execute"};
 
+    char *p_typeValues[] = {"PT_NULL", "PT_LOAD", "PT_DYNAMIC", "PT_INTERP", "PT_NOTE", "PT_SHLIB", "PT_PHDR", "PT_TLS"};
+
     fread(&header, sizeof(Elf64_Ehdr), 1, file);
 
     printEhdrInfo(header, EI_OSABIValues);
 
-    fseek(file, 0, SEEK_SET);
     fseek(file, header.e_phoff, SEEK_SET);
 
     Elf64_Phdr phdr;
 
     for (int i = 0; i < header.e_phnum; i++) {
         fread(&phdr, sizeof(char), header.e_phentsize, file);
-        printPhdrInfo(phdr, p_flagValues);
+        printPhdrInfo(phdr, p_flagValues, p_typeValues);
     }
 
-    fseek(file, 0, SEEK_SET);
     fseek(file, header.e_shoff, SEEK_SET);
 
     Elf64_Shdr shdr;
@@ -49,12 +49,11 @@ int main() {
     }
 
     long int stringTableHeaderOffset = header.e_shentsize * (header.e_shstrndx - 1) + header.e_shoff;
-    fseek(file, 0, SEEK_SET);
+
     fseek(file, stringTableHeaderOffset, SEEK_SET);
     fread(&shdr, sizeof(char), header.e_shentsize, file);
     printShdrInfo(shdr);
 
-    fseek(file, 0, SEEK_SET);
     fseek(file, shdr.sh_offset, SEEK_SET);
 
     char *string = malloc(shdr.sh_size * sizeof(char));
@@ -67,13 +66,15 @@ int main() {
 
     fseek(file, 4476, SEEK_SET); 
 
-    char *byteArray = malloc(15 * sizeof(char));
-    fread(byteArray, sizeof(char), 15, file);
-    fwrite(byteArray, sizeof(char), 15, stdout);
-    printf("\n\n");
-    printf("%016lX\n\n", byteArray);
-    free(byteArray);
+    unsigned char *byteArray = malloc(0x0D * sizeof(char));
+    fread(byteArray, sizeof(char), 0x0D, file);
     fclose(file);
+    for (int i = 0; i < 0x0D; i++) {
+        printf("%02X ", *(byteArray + i));
+    }
+    printf("\n\n");
+    free(byteArray);
+
 
     return 0;
 }
@@ -190,23 +191,32 @@ void printEhdrInfo(Elf64_Ehdr header, char* EI_OSABIValues[]) {
     return;
 }
 
-void printPhdrInfo(Elf64_Phdr phdr, char *p_flagValues[]) {
+void printPhdrInfo(Elf64_Phdr phdr, char *p_flagValues[], char *p_typeValues[]) {
 
     printf("=====Phdr Info=====\n\n");
 
-    printf("p_type: %08X\n", phdr.p_type);
-
-    if (phdr.p_flags == 0x0FF00000) {
-        printf("p_flags: %08X [PF_MASKOS/Unspecified]\n", phdr.p_flags);
+    if (phdr.p_type >= 0 && phdr.p_type <= 7) {
+        printf("p_type: %08X [%s]\n", phdr.p_type, p_typeValues[phdr.p_type]);
     }
-    else if (phdr.p_flags == 0xF0000000) {
-        printf("p_flags: %08X [PF_MASKPROC/Unspecified]\n", phdr.p_flags);
+    else if (phdr.p_type >= 0x60000000 && phdr.p_type <= 0x6fffffff) {
+        printf("p_type: %08X [OS-Specific]\n", phdr.p_type);
+    }
+    else if (phdr.p_type >= 0x70000000 && phdr.p_type <= 0x7fffffff) {
+        printf("p_type: %08X [PROCESSOR-SPECIFIC]\n", phdr.p_type);
+    }
+    
+
+    if (phdr.p_flags & 0x0ff00000) {
+        printf("p_flags: %08X [PF_MASKOS/Unspecified]", phdr.p_flags);
+    }
+    if (phdr.p_flags & 0xf0000000) {
+        printf(" [PF_MASKPROC/Unspecified]");
     }
     else {
-        printf("p_flags: %08X [%s]\n", phdr.p_flags, p_flagValues[phdr.p_flags]);
+        printf("p_flags: %08X [%s]", phdr.p_flags, p_flagValues[phdr.p_flags]);
     }
 
-    printf("p_offset: %016lX\n", phdr.p_offset);
+    printf("\np_offset: %016lX\n", phdr.p_offset);
     
     printf("p_vaddr: %016lX\n", phdr.p_vaddr);
 
