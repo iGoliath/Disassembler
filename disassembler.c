@@ -72,6 +72,13 @@ int main() {
     for (int i = 0; i < 0x0D; i++) {
         printf("%02X ", *(byteArray + i));
     }
+    for (int i = 0; i <= (8 * 0x0D); i++) {
+        printf("%d", (*(byteArray) << i) & 1);
+        if (i % 8 == 0) {
+            printf("\nCurrent i value: %d\n", i);
+            printf("\nCurrent byteArray: %d\n", *byteArray);
+        }
+    }
     printf("\n\n");
     free(byteArray);
 
